@@ -20,7 +20,7 @@ export default class CacheableImage extends React.Component {
         networkAvailable: PropTypes.bool,
         downloadInBackground: PropTypes.bool,
         storagePermissionGranted: PropTypes.bool
-    }
+    };
 
     static defaultProps = {
         style: {backgroundColor: 'transparent'},
@@ -32,19 +32,19 @@ export default class CacheableImage extends React.Component {
         networkAvailable: false,
         downloadInBackground: (Platform.OS === 'ios') ? false : true,
         storagePermissionGranted: true
-    }
+    };
 
     state = {
         isRemote: false,
         cachedImagePath: null,
         cacheable: true
-    }
+    };
 
-    networkAvailable = this.props.networkAvailable
+    networkAvailable = this.props.networkAvailable;
 
-    downloading = false
+    downloading = false;
 
-    jobId = null
+    jobId = null;
 
     setNativeProps(nativeProps) {
         if (this._imageComponent) {
@@ -61,14 +61,14 @@ export default class CacheableImage extends React.Component {
                 this.downloading = true;
                 this.jobId = info.jobId;
         }
-    }
+    };
 
     imageDownloadProgress = info => {
-        if ((info.contentLength / info.bytesWritten) == 1) {
+        if ((info.contentLength / info.bytesWritten) === 1) {
             this.downloading = false;
             this.jobId = null;
         }
-    }
+    };
 
     checkImageCache = (imageUri, cachePath, cacheKey) => {
         const dirPath = DocumentDirectoryPath + '/' + cachePath;
@@ -78,7 +78,7 @@ export default class CacheableImage extends React.Component {
         // The NSURLIsExcludedFromBackupKey property can be provided to set this attribute on iOS platforms.
         // Apple will reject apps for storing offline cache data that does not have this attribute.
         // https://github.com/johanneslumpe/react-native-fs#mkdirfilepath-string-options-mkdiroptions-promisevoid
-        RNFS.mkdir(dirPath, {NSURLIsExcludedFromBackupKey: true})
+        RNFS.mkdir(dirPath, {NSURLIsExcludedFromBackupKey: true});
 
         RNFS.stat(filePath)
             .then((res) => {
@@ -108,7 +108,7 @@ export default class CacheableImage extends React.Component {
                 });
 
             });
-    }
+    };
 
     _downloadCacheImage = (imageUri, dirPath, filePath) => {
         // means file does not exist
@@ -182,7 +182,7 @@ export default class CacheableImage extends React.Component {
                 this._deleteFilePath(filePath);
                 this.setState({cacheable: false, cachedImagePath: null});
             });
-    }
+    };
 
     _deleteFilePath = (filePath) => {
         RNFS
@@ -195,19 +195,19 @@ export default class CacheableImage extends React.Component {
                         });
                 }
             });
-    }
+    };
 
     _processSource = (source, skipSourceCheck) => {
 
         if (this.props.storagePermissionGranted
             && source !== null
-            && source != ''
+            && source !== ''
             && typeof source === "object"
             && source.hasOwnProperty('uri')
             && (
                 skipSourceCheck ||
                 typeof skipSourceCheck === 'undefined' ||
-                (!skipSourceCheck && source != this.props.source)
+                (!skipSourceCheck && source !== this.props.source)
             )
         ) { // remote
 
@@ -239,7 +239,7 @@ export default class CacheableImage extends React.Component {
         else {
             this.setState({isRemote: false});
         }
-    }
+    };
 
     _stopDownload = () => {
         if (!this.jobId) return;
@@ -247,24 +247,24 @@ export default class CacheableImage extends React.Component {
         this.downloading = false;
         RNFS.stopDownload(this.jobId);
         this.jobId = null;
-    }
+    };
 
     _handleConnectivityChange = isConnected => {
         this.networkAvailable = isConnected;
         if (this.networkAvailable && this.state.isRemote && !this.state.cachedImagePath) {
             this._processSource(this.props.source);
         }
-    }
+    };
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.source != this.props.source || nextProps.networkAvailable != this.networkAvailable) {
+        if (nextProps.source !== this.props.source || nextProps.networkAvailable !== this.networkAvailable) {
             this.networkAvailable = nextProps.networkAvailable;
             this._processSource(nextProps.source);
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState === this.state && nextProps === this.props) {
+        if (nextState == this.state && nextProps === this.props) {
             return false;
         }
         return true;
