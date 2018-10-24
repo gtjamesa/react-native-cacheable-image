@@ -46,6 +46,8 @@ export default class CacheableImage extends React.Component {
 
     jobId = null;
 
+    _isMounted = false;
+
     setNativeProps(nativeProps) {
         if (this._imageComponent) {
             this._imageComponent.setNativeProps(nativeProps);
@@ -99,7 +101,9 @@ export default class CacheableImage extends React.Component {
                 // If `RNFS.stat` failed, check if the file exists
                 RNFS.exists(filePath).then(exists => {
                     if (exists) {
-                        this.setState({cacheable: true, cachedImagePath: filePath});
+                        if (this._isMounted) {
+                            this.setState({cacheable: true, cachedImagePath: filePath});
+                        }
                     } else {
                         this._downloadCacheImage(imageUri, dirPath, filePath);
                     }
@@ -233,8 +237,10 @@ export default class CacheableImage extends React.Component {
             const type = url.pathname.replace(/.*\.(.*)/, '$1');
             const cacheKey = SHA1(cacheable) + (type.length < url.pathname.length ? '.' + type : '');
 
-            this.checkImageCache(source.uri, url.host, cacheKey);
-            this.setState({isRemote: true});
+            if (this._isMounted) {
+                this.checkImageCache(source.uri, url.host, cacheKey);
+                this.setState({isRemote: true});
+            }
         }
         else {
             this.setState({isRemote: false});
@@ -264,9 +270,10 @@ export default class CacheableImage extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState == this.state && nextProps === this.props) {
+        if (nextState === this.state && nextProps === this.props) {
             return false;
         }
+
         return true;
     }
 
@@ -280,7 +287,13 @@ export default class CacheableImage extends React.Component {
         this._processSource(this.props.source, true);
     }
 
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
     componentWillUnmount() {
+        this._isMounted = false;
+
         if (this.props.checkNetwork) {
             NetInfo.isConnected.removeEventListener('connectionChange', this._handleConnectivityChange);
             this._handleConnectivityChange = null;
